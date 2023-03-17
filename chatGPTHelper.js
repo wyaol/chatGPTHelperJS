@@ -16,6 +16,7 @@
     // Your code here...
 
     // global vars
+    let SPLIT_WORDS = '在回答的末尾统计本回答的字数。';
 
     // function define
     let randomNum = (minNum, maxNum) => {
@@ -120,7 +121,7 @@
     let startChat = async (input_) => {
         beforeStart();
         scrollToBottomByInterval();
-        const input = input_.split('在回答的末尾统计本回答的字数。').filter(item => item.length > 10).map(item2 => item2.trim())
+        const input = input_.split(SPLIT_WORDS).filter(item => item.length > 10).map(item2 => item2.trim())
         console.log(input)
         let startQuestionIndex = getStartQuestionIndex(input);
         if (startQuestionIndex !== -1) {
