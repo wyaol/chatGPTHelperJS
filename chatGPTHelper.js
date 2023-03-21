@@ -17,8 +17,21 @@
 
     // global vars
     let SPLIT_WORDS = '在回答的末尾统计本回答的字数。';
+    let conversationId = '';
 
     // function define
+    let recordChatId = () => {
+        let windowFetch = window.fetch
+        window.fetch = (url, request) => {
+            if (url.endsWith('/backend-api/moderations')) {
+                const body_ = JSON.parse(request?.body);
+                conversationId = body_['conversation_id'];
+                console.log(conversationId);
+            }
+            return windowFetch(url, request);
+        }
+    }
+
     let randomNum = (minNum, maxNum) => {
         return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
     }
@@ -32,7 +45,11 @@
     let checkStuck = async () => {
         setInterval(() => {
             if (document.querySelectorAll('div[class*="border-red"]').length > 0) {
-                location.reload();
+                if (conversationId?.length > 0) {
+                    location.url = `https://chat.openai.com/chat/${conversationId}`
+                } else {
+                    alert('预料之外的异常，未获取到会话ID，请联系开发')
+                }
             }
         }, 2000);
     };
@@ -177,6 +194,7 @@
     }
 
     // main function
+    recordChatId();
     setTimeout(() => {
         let div = document.createElement('div');
         div.innerHTML = '<textarea id="input_" rows="10" cols="30" style="background: white; color: black"></textarea><br>'
