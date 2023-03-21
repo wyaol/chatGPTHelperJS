@@ -66,6 +66,7 @@
     let printAll = async () => {
         await delayExecute(() => {
             document.querySelectorAll('.break-words').forEach(item => console.log(item.innerText));
+            localStorage.setItem('input_', '');
         });
     };
     let getStartQuestionIndex = (inputs) => {
@@ -135,7 +136,6 @@
             }
             await printAll();
         }
-        afterStop();
     }
     let beforeStart = () => {
         localStorage.setItem('start', 'true');
@@ -148,12 +148,28 @@
         localStorage.setItem('start', 'false');
         endButton();
     }
-    let startMain = () => {
+    let startMain = async () => {
         checkStuck();
+
         const input_ = document.querySelector('#input_').value;
         localStorage.setItem('input_', input_);
         console.log(input_);
-        startChat(input_); //promise
+        await startChat(input_); //promise
+
+        // while (1) {
+        //     let res = await axios.get('https://123.207.27.133:5001/outlines/ready')
+        //     if (!res.data.outline) {
+        //         alert('工作完毕')
+        //         break
+        //     } else {
+        //         const newInput = res.data.outline.content;
+        //         document.querySelector('#input_').value = newInput;
+        //         localStorage.setItem('input_', newInput);
+        //         console.log(newInput);
+        //         await startChat(newInput); //promise
+        //     }
+        // }
+        afterStop();
     };
     let stopMain = () => {
         afterStop();
