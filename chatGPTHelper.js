@@ -18,6 +18,7 @@
     // global vars
     let SPLIT_WORDS = '在回答的末尾统计本回答的字数。';
     let conversationId = '';
+    let title = '';
 
     // function define
     let recordChatId = () => {
@@ -44,11 +45,25 @@
     };
     let checkStuck = async () => {
         setInterval(() => {
-            if (document.querySelectorAll('div[class*="border-red"]').length > 0) {
+            let errorNodes = document.querySelectorAll('div[class*="text-red"]');
+            if (errorNodes.length > 0) {
+                // if (errorNodes[0].innerText.startsWith('Only one message at a time')) {
+                //     if (conversationId?.length > 0) {
+                //         delayExecute(() => {
+                //             location.href = `https://chat.openai.com/chat/${conversationId}`
+                //         })
+                //     } else {
+                //         alert('预料之外的异常，未获取到会话ID，请联系开发')
+                //     }
+                // } else {
+                //     document.querySelector('form button').click();
+                // }
                 if (conversationId?.length > 0) {
-                    location.url = `https://chat.openai.com/chat/${conversationId}`
+                    delayExecute(() => {
+                        location.href = `https://chat.openai.com/chat/${conversationId}`
+                    })
                 } else {
-                    alert('预料之外的异常，未获取到会话ID，请联系开发')
+                    console.log('预料之外的异常，未获取到会话ID，请联系开发')
                 }
             }
         }, 2000);
@@ -69,7 +84,11 @@
     }
     let getLastQuestion = () => {
         let nodes = document.querySelectorAll('.text-base .items-start');
-        return nodes.length > 0 ? nodes[nodes.length - 2].innerText : '';
+        return nodes.length > 0 ? nodes[nodes.length - 1].innerText : '';
+    }
+    let getLastSecondaryQuestion = () => {
+        let nodes = document.querySelectorAll('.text-base .items-start');
+        return nodes.length > 1 ? nodes[nodes.length - 2].innerText : '';
     }
     let ask = async (content) => {
         await waitResponse();
@@ -81,6 +100,13 @@
         });
     };
     let printAll = async () => {
+        let paragraphs = [];
+        document.querySelectorAll('.text-base .items-start').forEach(item => paragraphs.push(item.innerText));
+        axios.post('https://123.207.27.133:5001/outlines/articles', {
+            'paragraphs': paragraphs
+        }).then(res => {
+            console.log('文档已生成');
+        })
         await delayExecute(() => {
             document.querySelectorAll('.break-words').forEach(item => console.log(item.innerText));
             localStorage.setItem('input_', '');
@@ -88,13 +114,15 @@
     };
     let getStartQuestionIndex = (inputs) => {
         let last = getLastQuestion();
+        let secondaryLast = getLastSecondaryQuestion();
         let lastIndex = inputs.indexOf(last);
-        if (lastIndex < 0) {
+        let secondaryLastIndex = inputs.indexOf(secondaryLast);
+        if (lastIndex < 0 && secondaryLastIndex < 0) {
             return 0;
-        } else if (lastIndex === inputs.length - 1) {
+        } else if (secondaryLastIndex === inputs.length - 1) {
             return -1;
         } else {
-            return lastIndex + 1;
+            return lastIndex >= 0 ? lastIndex + 1 : secondaryLastIndex + 1;
         }
     }
     let scrollToBottomByInterval = () => {
@@ -151,8 +179,10 @@
                     break;
                 }
             }
+            await waitResponse();
             await printAll();
         }
+        await printAll();
     }
     let beforeStart = () => {
         localStorage.setItem('start', 'true');
@@ -218,7 +248,7 @@
         if (localStorage.getItem('start') === 'true') {
             startMain();
         }
-    }, 4000);
+    }, 20000);
 
 
 })();
