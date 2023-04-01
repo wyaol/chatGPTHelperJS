@@ -94,6 +94,7 @@
         await waitResponse();
         await delayExecute(() => {
             document.querySelector('textarea').value = content;
+            document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
         });
         await delayExecute(() => {
             document.querySelector('form > div > div:nth-child(2) > button').click();
@@ -203,19 +204,19 @@
         console.log(input_);
         await startChat(input_); //promise
 
-        // while (1) {
-        //     let res = await axios.get('https://123.207.27.133:5001/outlines/ready')
-        //     if (!res.data.outline) {
-        //         alert('工作完毕')
-        //         break
-        //     } else {
-        //         const newInput = res.data.outline.content;
-        //         document.querySelector('#input_').value = newInput;
-        //         localStorage.setItem('input_', newInput);
-        //         console.log(newInput);
-        //         await startChat(newInput); //promise
-        //     }
-        // }
+        while (1) {
+            let res = await axios.get('https://123.207.27.133:5001/outlines/ready')
+            if (!res.data.outline) {
+                alert('工作完毕')
+                break
+            } else {
+                const newInput = res.data.outline.content;
+                document.querySelector('#input_').value = newInput;
+                localStorage.setItem('input_', newInput);
+                console.log(newInput);
+                await startChat(newInput); //promise
+            }
+        }
         afterStop();
     };
     let stopMain = () => {
