@@ -214,6 +214,9 @@
                 document.querySelector('#input_').value = newInput;
                 localStorage.setItem('input_', newInput);
                 console.log(newInput);
+                delayExecute(() => {
+                        location.href = `https://chat.openai.com/chat`
+                })
                 await startChat(newInput); //promise
             }
         }
