@@ -82,6 +82,9 @@
             }
         }
     }
+    let getAllQuestionsAndAnswersNodes = () => {
+        return document.querySelectorAll('.text-base .items-start');
+    }
     let getLastQuestion = () => {
         let nodes = document.querySelectorAll('.text-base .items-start');
         return nodes.length > 0 ? nodes[nodes.length - 1].innerText : '';
@@ -90,8 +93,22 @@
         let nodes = document.querySelectorAll('.text-base .items-start');
         return nodes.length > 1 ? nodes[nodes.length - 2].innerText : '';
     }
+    let getLastAnswerOrQuestion = () => {
+        const nodes = getAllQuestionsAndAnswersNodes();
+        return nodes[nodes.length -1]
+    }
+    let reGenAnswer = async () => {
+        return await delayExecute(() => {
+            document.querySelector('.btn-neutral').click()
+        })
+    }
     let ask = async (content) => {
         await waitResponse();
+        let lastAnswer = getLastAnswerOrQuestion()
+        while (lastAnswer.length > 0 && lastAnswer.charAt(lastAnswer.length - 1) !== '.' && lastAnswer.charAt(lastAnswer.length - 1) !== '。') {
+            await reGenAnswer();
+            lastAnswer = getLastAnswerOrQuestion();
+        }
         await delayExecute(() => {
             document.querySelector('textarea').value = content;
             document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
@@ -102,7 +119,7 @@
     };
     let printAll = async () => {
         let paragraphs = [];
-        document.querySelectorAll('.text-base .items-start').forEach(item => paragraphs.push(item.innerText));
+        getAllQuestionsAndAnswersNodes().forEach(item => paragraphs.push(item.innerText));
         axios.post('https://123.207.27.133:5001/outlines/articles', {
             'paragraphs': paragraphs
         }).then(res => {
@@ -132,7 +149,7 @@
                 top: document.querySelector('.text-sm').clientHeight,
                 behavior: 'smooth'
             });
-        }, 2000);
+        }, 20000);
     }
     let createStartButton = () => {
         let button = document.createElement('button');
