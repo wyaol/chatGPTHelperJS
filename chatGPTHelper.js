@@ -47,17 +47,6 @@
         setInterval(() => {
             let errorNodes = document.querySelectorAll('div[class*="text-red"]');
             if (errorNodes.length > 0) {
-                // if (errorNodes[0].innerText.startsWith('Only one message at a time')) {
-                //     if (conversationId?.length > 0) {
-                //         delayExecute(() => {
-                //             location.href = `https://chat.openai.com/chat/${conversationId}`
-                //         })
-                //     } else {
-                //         alert('预料之外的异常，未获取到会话ID，请联系开发')
-                //     }
-                // } else {
-                //     document.querySelector('form button').click();
-                // }
                 if (conversationId?.length > 0) {
                     delayExecute(() => {
                         location.href = `https://chat.openai.com/chat/${conversationId}`
@@ -95,7 +84,7 @@
     }
     let getLastAnswerOrQuestion = () => {
         const nodes = getAllQuestionsAndAnswersNodes();
-        return nodes[nodes.length -1]
+        return nodes.length > 0 ? nodes[nodes.length -1] : undefined;
     }
     let reGenAnswer = async () => {
         return await delayExecute(() => {
@@ -105,7 +94,7 @@
     let ask = async (content) => {
         await waitResponse();
         let lastAnswer = getLastAnswerOrQuestion()
-        while (lastAnswer.length > 0 && lastAnswer.charAt(lastAnswer.length - 1) !== '.' && lastAnswer.charAt(lastAnswer.length - 1) !== '。') {
+        while (lastAnswer && lastAnswer.length > 0 && lastAnswer.charAt(lastAnswer.length - 1) !== '.' && lastAnswer.charAt(lastAnswer.length - 1) !== '。') {
             await reGenAnswer();
             lastAnswer = getLastAnswerOrQuestion();
         }
@@ -145,8 +134,9 @@
     }
     let scrollToBottomByInterval = () => {
         setInterval(() => {
+            let textAll = document.querySelectorAll('.text-sm');
             document.querySelectorAll('div[class^="react-scroll-to-bottom"]')[1].scrollTo({
-                top: document.querySelector('.text-sm').clientHeight,
+                top: textAll[textAll.length - 1].clientHeight,
                 behavior: 'smooth'
             });
         }, 20000);
