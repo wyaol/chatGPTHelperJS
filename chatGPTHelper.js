@@ -36,11 +36,11 @@
     let randomNum = (minNum, maxNum) => {
         return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
     }
-    let delayExecute = async (func) => {
+    let delayExecute = async (func, delayTime = randomNum(3000, 4000)) => {
         return await new Promise(resolve => {
             setTimeout(() => {
                 resolve(func());
-            }, randomNum(3000, 4000));
+            }, delayTime);
         });
     };
     let checkStuck = async () => {
@@ -57,7 +57,7 @@
             }
         }, 2000);
     };
-    let waitResponse = async () => {
+    let waitResponse2 = async () => {
         while (1) {
             let tag = await delayExecute(() => {
                 return document.querySelector('.text-2xl');
@@ -68,6 +68,23 @@
                 break;
             } else {
                 continue
+            }
+        }
+    }
+    let waitResponse = async () => {
+        let oldOriginTextNumber = 0
+        while (1) {
+            let textNumber = await delayExecute(() => {
+                let lastAnswerOrQuestion = getLastAnswerOrQuestion();
+                if (!lastAnswerOrQuestion) return 0
+                return lastAnswerOrQuestion.innerText.length;
+            });
+            if (textNumber === oldOriginTextNumber) {
+                await delayExecute(() => {
+                }, randomNum(1000, 2000))
+                break;
+            } else {
+                oldOriginTextNumber = textNumber;
             }
         }
     }
@@ -91,11 +108,22 @@
             document.querySelector('.btn-neutral').click()
         })
     }
+    let continueGenAnswer = async () => {
+        return await delayExecute(() => {
+            document.querySelectorAll('.btn-neutral')[1].click()
+        })
+    }
     let ask = async (content) => {
         await waitResponse();
         let lastAnswer = getLastAnswerOrQuestion()
-        while (lastAnswer && lastAnswer.length > 0 && lastAnswer.charAt(lastAnswer.length - 1) !== '.' && lastAnswer.charAt(lastAnswer.length - 1) !== '。') {
+        while (lastAnswer && lastAnswer.length > 0 && (lastAnswer.charAt(lastAnswer.length - 1) !== '.' || lastAnswer.charAt(lastAnswer.length - 1) !== '。')) {
             await reGenAnswer();
+            await waitResponse();
+            lastAnswer = getLastAnswerOrQuestion();
+        }
+        while (document.querySelectorAll('.btn-neutral').length > 1) {
+            await continueGenAnswer();
+            await waitResponse();
             lastAnswer = getLastAnswerOrQuestion();
         }
         await delayExecute(() => {
