@@ -57,7 +57,7 @@
             }
         }, 2000);
     };
-    let waitResponse2 = async () => {
+    let waitResponse = async () => {
         while (1) {
             let tag = await delayExecute(() => {
                 return document.querySelector('.text-2xl');
@@ -71,23 +71,23 @@
             }
         }
     }
-    let waitResponse = async () => {
-        let oldOriginTextNumber = 0
-        while (1) {
-            let textNumber = await delayExecute(() => {
-                let lastAnswerOrQuestion = getLastAnswerOrQuestion();
-                if (!lastAnswerOrQuestion) return 0
-                return lastAnswerOrQuestion.innerText.length;
-            });
-            if (textNumber === oldOriginTextNumber) {
-                await delayExecute(() => {
-                }, randomNum(1000, 2000))
-                break;
-            } else {
-                oldOriginTextNumber = textNumber;
-            }
-        }
-    }
+    // let waitResponse = async () => {
+    //     let oldOriginTextNumber = 0
+    //     while (1) {
+    //         let textNumber = await delayExecute(() => {
+    //             let lastAnswerOrQuestion = getLastAnswerOrQuestion();
+    //             if (!lastAnswerOrQuestion) return 0
+    //             return lastAnswerOrQuestion.innerText.length;
+    //         }, randomNum(5000, 6000));
+    //         if (textNumber === oldOriginTextNumber) {
+    //             await delayExecute(() => {
+    //             }, randomNum(1000, 2000))
+    //             break;
+    //         } else {
+    //             oldOriginTextNumber = textNumber;
+    //         }
+    //     }
+    // }
     let getAllQuestionsAndAnswersNodes = () => {
         return document.querySelectorAll('.text-base .items-start');
     }
@@ -108,6 +108,11 @@
             document.querySelector('.btn-neutral').click()
         })
     }
+    let reGenAnswerWhenOccurError = async () => {
+        return await delayExecute(() => {
+            document.querySelector('form .btn-primary').click()
+        })
+    }
     let continueGenAnswer = async () => {
         return await delayExecute(() => {
             document.querySelectorAll('.btn-neutral')[1].click()
@@ -115,6 +120,10 @@
     }
     let ask = async (content) => {
         await waitResponse();
+        while (document.querySelectorAll('.border-red-500').length > 0) {
+            await reGenAnswerWhenOccurError();
+            await waitResponse();
+        }
         let lastAnswer = getLastAnswerOrQuestion()
         while (lastAnswer && lastAnswer.length > 0 && (lastAnswer.charAt(lastAnswer.length - 1) !== '.' || lastAnswer.charAt(lastAnswer.length - 1) !== '。')) {
             await reGenAnswer();
@@ -130,8 +139,12 @@
             document.querySelector('textarea').value = content;
             document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
         });
+        while (document.querySelectorAll('.border-red-500').length > 0) {
+            await reGenAnswerWhenOccurError();
+            await waitResponse();
+        }
         await delayExecute(() => {
-            document.querySelector('form > div > div:nth-child(2) > button').click();
+            document.querySelector('form > div > div > button').click();
         });
     };
     let printAll = async () => {
@@ -187,6 +200,16 @@
         button.style.borderRadius = '10px';
         button.id = 'stop-button';
         button.innerText = '停止提问';
+        return button;
+    }
+    let createUploadButton = () => {
+        let button = document.createElement('button');
+        button.style.padding = '10px';
+        button.style.background = 'white';
+        button.style.color = 'black';
+        button.style.borderRadius = '10px';
+        button.id = 'upload-button';
+        button.innerText = '上传文档';
         return button;
     }
     let disableButton = () => {
@@ -273,6 +296,9 @@
         let stopButton = createStopButton();
         stopButton.onclick = stopMain;
         div.appendChild(stopButton);
+        let uploadButton = createUploadButton();
+        uploadButton.onclick = printAll;
+        div.appendChild(uploadButton);
         let style = {
             position: 'absolute',
             top: 0,
