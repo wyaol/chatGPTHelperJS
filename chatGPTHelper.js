@@ -71,23 +71,6 @@
             }
         }
     }
-    // let waitResponse = async () => {
-    //     let oldOriginTextNumber = 0
-    //     while (1) {
-    //         let textNumber = await delayExecute(() => {
-    //             let lastAnswerOrQuestion = getLastAnswerOrQuestion();
-    //             if (!lastAnswerOrQuestion) return 0
-    //             return lastAnswerOrQuestion.innerText.length;
-    //         }, randomNum(5000, 6000));
-    //         if (textNumber === oldOriginTextNumber) {
-    //             await delayExecute(() => {
-    //             }, randomNum(1000, 2000))
-    //             break;
-    //         } else {
-    //             oldOriginTextNumber = textNumber;
-    //         }
-    //     }
-    // }
     let getAllQuestionsAndAnswersNodes = () => {
         return document.querySelectorAll('.text-base .items-start');
     }
@@ -110,7 +93,7 @@
     }
     let reGenAnswerWhenOccurError = async () => {
         return await delayExecute(() => {
-            document.querySelector('form .btn-primary').click()
+            document.querySelector('.items-center .btn-primary').click()
         })
     }
     let continueGenAnswer = async () => {
@@ -130,11 +113,11 @@
             await waitResponse();
             lastAnswer = getLastAnswerOrQuestion();
         }
-        while (document.querySelectorAll('.btn-neutral').length > 1) {
-            await continueGenAnswer();
-            await waitResponse();
-            lastAnswer = getLastAnswerOrQuestion();
-        }
+        // while (document.querySelectorAll('.btn-neutral').length > 1) {
+        //     await continueGenAnswer();
+        //     await waitResponse();
+        //     lastAnswer = getLastAnswerOrQuestion();
+        // }
         await delayExecute(() => {
             document.querySelector('textarea').value = content;
             document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
@@ -144,7 +127,7 @@
             await waitResponse();
         }
         await delayExecute(() => {
-            document.querySelector('form > div > div > button').click();
+            document.querySelector('form > div > div > div > button').click();
         });
     };
     let printAll = async () => {
@@ -175,11 +158,13 @@
     }
     let scrollToBottomByInterval = () => {
         setInterval(() => {
-            let textAll = document.querySelectorAll('.text-sm');
-            document.querySelectorAll('div[class^="react-scroll-to-bottom"]')[1].scrollTo({
-                top: textAll[textAll.length - 1].clientHeight,
-                behavior: 'smooth'
-            });
+            // let textAll = document.querySelectorAll('.text-sm');
+            // document.querySelectorAll('div[class^="react-scroll-to-bottom"]')[1].scrollTo({
+            //     top: textAll[textAll.length - 2].clientHeight,
+            //     behavior: 'smooth'
+            // });
+            let items = document.querySelectorAll("button.cursor-pointer");
+            items[items.length-1].click();
         }, 20000);
     }
     let createStartButton = () => {
@@ -246,9 +231,9 @@
     let beforeStart = () => {
         localStorage.setItem('start', 'true');
         disableButton();
-        if (document.querySelector('form textarea') == null) {
-            document.querySelector('form button').click();
-        }
+        // if (document.querySelector('form textarea') == null) {
+        //     document.querySelector('form button').click();
+        // }
     }
     let afterStop = () => {
         localStorage.setItem('start', 'false');
