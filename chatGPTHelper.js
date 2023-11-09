@@ -18,13 +18,15 @@
     // global vars
     let SPLIT_WORDS = '在回答的末尾统计本回答的字数。';
     let conversationId = '';
+    let location_href = '';
     let title = '';
 
     // function define
     let recordChatId = () => {
+
         let windowFetch = window.fetch
         window.fetch = (url, request) => {
-            if (url.endsWith('/backend-api/moderations')) {
+            if (url.endsWith('/backend-api/conversation')) {
                 const body_ = JSON.parse(request?.body);
                 conversationId = body_['conversation_id'];
                 console.log(conversationId);
@@ -49,7 +51,7 @@
             if (errorNodes.length > 0) {
                 if (conversationId?.length > 0) {
                     delayExecute(() => {
-                        location.href = `https://chat.openai.com/chat/${conversationId}`
+                        location.href = `https://chat.openai.com/c/${conversationId}`
                     })
                 } else {
                     console.log('预料之外的异常，未获取到会话ID，请联系开发')
@@ -101,9 +103,49 @@
             document.querySelectorAll('.btn-neutral')[1].click()
         })
     }
+    let isGPT4Block = () => {
+        return document.querySelectorAll('.border-red-500')[0].innerText.search("You've reached the current usage cap for GPT-4. You can continue with the default model now") !== -1;
+    }
+    let parseTimeString = (timeString) => {
+        // 创建一个表示当前日期的Date对象
+        var currentDate = new Date();
+
+        // 使用正则表达式或字符串分割方法将时间字符串分割成小时、分钟和AM/PM
+        var timeParts = timeString.split(':');
+        var hours = parseInt(timeParts[0]);
+        var minutes = parseInt(timeParts[1].split(' ')[0]); // 去除 AM/PM 部分
+        var amPm = timeParts[1].split(' ')[1]; // 获取AM/PM部分
+
+        // 根据AM/PM部分调整小时
+        if (amPm === "PM" && hours < 12) {
+            hours += 12;
+        } else if (amPm === "AM" && hours === 12) {
+            hours = 0; // 处理12:xx AM的情况
+        }
+
+        // 将分割后的小时和分钟设置到Date对象
+        currentDate.setHours(hours);
+        currentDate.setMinutes(minutes);
+
+        return currentDate;
+    }
+    let waitGPT4BlockEnd = async () => {
+        let blockUntil = document.querySelectorAll('.border-red-500')[0].innerText.match(/.*?after (.*?)\..*/)[1];
+        let blockUntilDate = parseTimeString(blockUntil);
+        while (new Date() < blockUntilDate) {
+            await delayExecute(() => {
+            }, 30000)
+        }
+        delayExecute(() => {
+            location.href = location_href
+        })
+    }
     let ask = async (content) => {
         await waitResponse();
         while (document.querySelectorAll('.border-red-500').length > 0) {
+            if (isGPT4Block()) {
+               await waitGPT4BlockEnd();
+            }
             await reGenAnswerWhenOccurError();
             await waitResponse();
         }
@@ -123,6 +165,9 @@
             document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
         });
         while (document.querySelectorAll('.border-red-500').length > 0) {
+            if (isGPT4Block()) {
+               await waitGPT4BlockEnd();
+            }
             await reGenAnswerWhenOccurError();
             await waitResponse();
         }
@@ -164,7 +209,9 @@
             //     behavior: 'smooth'
             // });
             let items = document.querySelectorAll("button.cursor-pointer");
-            items[items.length-1].click();
+            if (items.length == 2) {
+                items[items.length-1].click();
+            }
         }, 20000);
     }
     let createStartButton = () => {
@@ -210,7 +257,7 @@
     }
     let startChat = async (input_) => {
         beforeStart();
-        scrollToBottomByInterval();
+        // scrollToBottomByInterval();
         const input = input_.split(SPLIT_WORDS).filter(item => item.length > 10).map(item2 => item2.trim())
         console.log(input)
         let startQuestionIndex = getStartQuestionIndex(input);
@@ -240,6 +287,9 @@
         endButton();
     }
     let startMain = async () => {
+        location_href = location.href;
+        console.log('location_href is: ' + location_href)
+
         checkStuck();
 
         const input_ = document.querySelector('#input_').value;
@@ -273,6 +323,7 @@
     // main function
     recordChatId();
     setTimeout(() => {
+        document.querySelector('.text-2xl').remove();
         let div = document.createElement('div');
         div.innerHTML = '<textarea id="input_" rows="10" cols="30" style="background: white; color: black"></textarea><br>'
         let startButton = createStartButton();
