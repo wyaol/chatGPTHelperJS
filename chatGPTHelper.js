@@ -5,6 +5,7 @@
 // @description  try to take over the world!
 // @author       You
 // @match        https://chat.openai.com/*
+// @match        https://chatgpt.com/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        none
 // @require      https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
@@ -51,7 +52,7 @@
             if (errorNodes.length > 0) {
                 if (conversationId?.length > 0) {
                     delayExecute(() => {
-                        location.href = `https://chat.openai.com/c/${conversationId}`
+                        location.href = `https://chatgpt.com/c/${conversationId}`
                     })
                 } else {
                     console.log('预料之外的异常，未获取到会话ID，请联系开发')
@@ -62,9 +63,9 @@
     let waitResponse = async () => {
         while (1) {
             let tag = await delayExecute(() => {
-                return document.querySelector('.text-2xl');
+                return document.querySelector('form > div > div.items-center > div > div > button > svg > path');
             });
-            if (tag === null) {
+            if (tag != null) {
                 await delayExecute(() => {
                 })
                 break;
@@ -142,6 +143,7 @@
     }
     let ask = async (content) => {
         await waitResponse();
+
         while (document.querySelectorAll('.border-red-500').length > 0) {
             if (isGPT4Block()) {
                await waitGPT4BlockEnd();
@@ -172,7 +174,7 @@
             await waitResponse();
         }
         await delayExecute(() => {
-            document.querySelector('form > div > div > div > button').click();
+            document.querySelector('form > div > div.items-center > div > div > button').click();
         });
     };
     let printAll = async () => {
@@ -256,11 +258,13 @@
         button_.innerHTML = '已结束，重新开始请刷新页面';
     }
     let startChat = async (input_) => {
+        if (input_ == "") return "";
         beforeStart();
         // scrollToBottomByInterval();
-        const input = input_.split(SPLIT_WORDS).filter(item => item.length > 10).map(item2 => item2.trim())
-        console.log(input)
+        const input = input_.split(SPLIT_WORDS).filter(item => item.length > 10).map(item2 => item2.trim());
+
         let startQuestionIndex = getStartQuestionIndex(input);
+
         if (startQuestionIndex !== -1) {
             for (let i = startQuestionIndex; i < input.length; i++) {
                 if (localStorage.getItem('start') === 'true') {
@@ -294,7 +298,6 @@
 
         const input_ = document.querySelector('#input_').value;
         localStorage.setItem('input_', input_);
-        console.log(input_);
         await startChat(input_); //promise
 
         while (1) {
@@ -323,7 +326,12 @@
     // main function
     recordChatId();
     setTimeout(() => {
-        document.querySelector('.text-2xl').remove();
+
+        let ele = document.querySelector('.text-2xl');
+        if (ele) {
+            ele.remove();
+        }
+
         let div = document.createElement('div');
         div.innerHTML = '<textarea id="input_" rows="10" cols="30" style="background: white; color: black"></textarea><br>'
         let startButton = createStartButton();
@@ -349,7 +357,7 @@
         if (localStorage.getItem('start') === 'true') {
             startMain();
         }
-    }, 20000);
+    }, 5000);
 
 
 })();
