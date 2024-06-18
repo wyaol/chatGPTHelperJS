@@ -75,14 +75,14 @@
         }
     }
     let getAllQuestionsAndAnswersNodes = () => {
-        return document.querySelectorAll('.text-base .items-start');
+        return document.querySelectorAll('.flex.flex-grow.flex-col.max-w-full');
     }
     let getLastQuestion = () => {
-        let nodes = document.querySelectorAll('.text-base .items-start');
+        let nodes = document.querySelectorAll('.flex.flex-grow.flex-col.max-w-full');
         return nodes.length > 0 ? nodes[nodes.length - 1].innerText : '';
     }
     let getLastSecondaryQuestion = () => {
-        let nodes = document.querySelectorAll('.text-base .items-start');
+        let nodes = document.querySelectorAll('.flex.flex-grow.flex-col.max-w-full');
         return nodes.length > 1 ? nodes[nodes.length - 2].innerText : '';
     }
     let getLastAnswerOrQuestion = () => {
