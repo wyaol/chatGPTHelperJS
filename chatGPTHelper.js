@@ -105,7 +105,7 @@
         })
     }
     let isGPT4Block = () => {
-        return document.querySelectorAll('.border-red-500')[0].innerText.search("You've reached the current usage cap for GPT-4. You can continue with the default model now") !== -1;
+        return document.querySelectorAll('.text-token-text-error')[0].innerText.search("You've reached the current usage cap for GPT-4. You can continue with the default model now") !== -1;
     }
     let parseTimeString = (timeString) => {
         // 创建一个表示当前日期的Date对象
@@ -131,7 +131,7 @@
         return currentDate;
     }
     let waitGPT4BlockEnd = async () => {
-        let blockUntil = document.querySelectorAll('.border-red-500')[0].innerText.match(/.*?after (.*?)\..*/)[1];
+        let blockUntil = document.querySelectorAll('.text-token-text-error')[0].innerText.match(/.*?after (.*?)\..*/)[1];
         let blockUntilDate = parseTimeString(blockUntil);
         while (new Date() < blockUntilDate) {
             await delayExecute(() => {
@@ -144,7 +144,7 @@
     let ask = async (content) => {
         await waitResponse();
 
-        while (document.querySelectorAll('.border-red-500').length > 0) {
+        while (document.querySelectorAll('.text-token-text-error').length > 0) {
             if (isGPT4Block()) {
                await waitGPT4BlockEnd();
             }
@@ -166,7 +166,7 @@
             document.querySelector('textarea').value = content;
             document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
         });
-        while (document.querySelectorAll('.border-red-500').length > 0) {
+        while (document.querySelectorAll('.text-token-text-error').length > 0) {
             if (isGPT4Block()) {
                await waitGPT4BlockEnd();
             }
