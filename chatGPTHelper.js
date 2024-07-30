@@ -63,9 +63,12 @@
     let waitResponse = async () => {
         while (1) {
             let tag = await delayExecute(() => {
-                return document.querySelector('form > div > div.items-center > div > div > button > svg > path');
+                let element = document.querySelector('button[data-testid="fruitjuice-send-button"]');
+                document.querySelector('font-bold text-token-text-primary');
+                return element;
             });
-            if (tag != null) {
+            const hasErr = document.querySelectorAll('.text-token-text-error').length > 0
+            if ((tag != null && document.querySelector('textarea').value === '') || hasErr) {
                 await delayExecute(() => {
                 })
                 break;
@@ -87,7 +90,7 @@
     }
     let getLastAnswerOrQuestion = () => {
         const nodes = getAllQuestionsAndAnswersNodes();
-        return nodes.length > 0 ? nodes[nodes.length -1] : undefined;
+        return nodes.length > 0 ? nodes[nodes.length - 1] : undefined;
     }
     let reGenAnswer = async () => {
         return await delayExecute(() => {
@@ -144,9 +147,16 @@
     let ask = async (content) => {
         await waitResponse();
 
+         if (document.querySelector('div.font-bold.text-token-text-primary') != null) {
+            await delayExecute(() => {
+                location.href = location_href
+                console.log(location_href)
+            }, 10000);
+        }
+
         while (document.querySelectorAll('.text-token-text-error').length > 0) {
             if (isGPT4Block()) {
-               await waitGPT4BlockEnd();
+                await waitGPT4BlockEnd();
             }
             await reGenAnswerWhenOccurError();
             await waitResponse();
@@ -164,11 +174,11 @@
         // }
         await delayExecute(() => {
             document.querySelector('textarea').value = content;
-            document.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
+            document.querySelector('textarea').dispatchEvent(new Event('input', {bubbles: true}));
         });
         while (document.querySelectorAll('.text-token-text-error').length > 0) {
             if (isGPT4Block()) {
-               await waitGPT4BlockEnd();
+                await waitGPT4BlockEnd();
             }
             await reGenAnswerWhenOccurError();
             await waitResponse();
@@ -212,7 +222,7 @@
             // });
             let items = document.querySelectorAll("button.cursor-pointer");
             if (items.length == 2) {
-                items[items.length-1].click();
+                items[items.length - 1].click();
             }
         }, 20000);
     }
@@ -311,7 +321,7 @@
                 localStorage.setItem('input_', newInput);
                 console.log(newInput);
                 delayExecute(() => {
-                        location.href = `https://chat.openai.com/chat`
+                    location.href = `https://chat.openai.com/chat`
                 })
                 await startChat(newInput); //promise
             }
